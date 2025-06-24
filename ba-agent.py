@@ -1,13 +1,13 @@
 import streamlit as st
 from dotenv import load_dotenv
 import google.generativeai as genai
-import json
 import os
-import requests
 import pymupdf4llm
 import fitz  # PyMuPDF
 from PIL import Image
 import io
+# import requests
+# import json
 
 load_dotenv(override=True)
 
@@ -20,10 +20,17 @@ if not gemini_api_key or gemini_api_key.strip() == "":
 
 genai.configure(api_key=gemini_api_key)
 
-def analyze_with_gemini(md_text):
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    prompt = f"This is a business plan that has been made. Analyse it and give your opinion on what is good and what needs to be changed or improved: {md_text}"
-    response = model.generate_content(prompt)
+def analyze_with_gemini(md_text, images):
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    
+    # create content parts starting with text
+    content_parts = [f"This is a business plan that has been made. Analyse it and give your opinion on what is good and what needs to be changed or improved: {md_text}"]
+    
+    # add images directly to content parts
+    for img in images:
+        content_parts.append(img)
+    
+    response = model.generate_content(content_parts)
     return response.text
 
 uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
@@ -41,6 +48,7 @@ if uploaded_file is not None:
     st.subheader("Extracted Images:")
     doc = fitz.open("temp_uploaded.pdf")
     image_count = 0
+    image_list = []
     for page_index in range(len(doc)):
         page = doc[page_index]
         images = page.get_images(full=True)
@@ -51,13 +59,14 @@ if uploaded_file is not None:
             image = Image.open(io.BytesIO(image_bytes))
             st.image(image, caption=f"Page {page_index+1} - Image {img_index+1}")
             image_count += 1
+            image_list.append(image)
     if image_count == 0:
         st.info("No images found in the PDF.")
     
     st.subheader("Gemini Analysis")
     if st.button("Analyze with Gemini"):
         with st.spinner("Analyzing with Gemini..."):
-            analysis = analyze_with_gemini(md_text)
+            analysis = analyze_with_gemini(md_text, image_list)
             if analysis:
                 st.markdown(analysis)
             else:
