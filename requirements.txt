@@ -4,3 +4,5 @@ openai
 pypdf
 gradio
 requests
+pymupdf
+Pillow
