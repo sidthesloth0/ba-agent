@@ -8,6 +8,7 @@ from PIL import Image
 import io
 import re
 from streamlit_mermaid import st_mermaid
+import base64
 
 load_dotenv(override=True)
 
@@ -89,12 +90,12 @@ def generate_mermaid_req_doc(md_text):
     
     prompt = f"""
     You are a technical architect. Based on the following business plan, create a technical requirements document using Mermaid.js syntax.
-    The document should outline the system architecture, components, and user flow.
+    The document should outline the system architecture, components, and user flow. The diagram orientation must be top-down (use "graph TD").
 
     Business Plan (Markdown):
     {md_text}
 
-    IMPORTANT: Your response must contain ONLY the raw Mermaid.js code for the diagram. Do not include any other text, explanations, or markdown code fences like ```mermaid.
+    IMPORTANT: Your response must contain ONLY the raw Mermaid.js code for the diagram. Start the diagram with "graph TD". Do not include any other text, explanations, or markdown code fences like ```mermaid. Also, do not use any custom styling, such as 'classDef' or 'linkStyle'. Do not add text labels to the arrows or links. Stick to the most basic Mermaid.js syntax for maximum compatibility.
     """
     
     try:
@@ -179,9 +180,9 @@ if uploaded_file is not None and uploaded_file.name != st.session_state.last_fil
 if st.session_state.md_text:
     # --- Sidebar ---
     st.sidebar.markdown("## Navigation")
-    st.sidebar.markdown("[📄 Extracted Text](#extracted-markdown-text)")
-    st.sidebar.markdown("[🖼️ Extracted Images](#extracted-images)")
-    st.sidebar.markdown("[🤖 AI Analysis](#gemini-analysis)")
+    st.sidebar.markdown("[Extracted Text](#extracted-markdown-text)")
+    st.sidebar.markdown("[Extracted Images](#extracted-images)")
+    st.sidebar.markdown("[AI Analysis](#gemini-analysis)")
     st.sidebar.markdown("---")
 
     # Display token usage
@@ -237,7 +238,18 @@ if st.session_state.md_text:
                 st.error("Failed to generate Mermaid.js diagram.")
 
     if st.session_state.mermaid_code:
+        # Create the mermaid.live URL with the diagram code
+        mermaid_code_bytes = st.session_state.mermaid_code.encode('utf-8')
+        base64_bytes = base64.b64encode(mermaid_code_bytes)
+        base64_string = base64_bytes.decode('utf-8')
+        mermaid_live_url = f"https://mermaid.live/edit#base64:{base64_string}"
+
+        # Display a button that opens the diagram in the editor
+        st.link_button("Open and Edit in Mermaid.live", url=mermaid_live_url)
+
         st_mermaid(st.session_state.mermaid_code)
+        with st.expander("View and Copy Mermaid.js Code"):
+            st.code(st.session_state.mermaid_code, language="mermaid")
 
 # 3. Handle the case where no file is uploaded or it's cleared
 if uploaded_file is None and st.session_state.last_filename is not None:
