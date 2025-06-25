@@ -1,8 +1,7 @@
 streamlit
 python-dotenv
-openai
-pypdf
-gradio
-requests
-pymupdf
+google-generativeai
+pymupdf4llm
+PyMuPDF
 Pillow
+streamlit-mermaid
