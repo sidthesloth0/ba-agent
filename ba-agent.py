@@ -33,7 +33,7 @@ def extract_headings(markdown_text):
     return headings
 
 def create_sidebar_toc(headings):
-    """Creates a sidebar table of contents from extracted headings."""
+    # creates a sidebar table of contents from extracted headings
     if headings:
         st.sidebar.markdown("## Table of Contents")
         for heading in headings:
@@ -72,10 +72,16 @@ def analyze_with_gemini(md_text, images):
     
     try:
         response = model.generate_content(content_parts)
-        return response.text
+        usage = response.usage_metadata
+        token_info = {
+            "prompt": usage.prompt_token_count,
+            "output": usage.candidates_token_count,
+            "total": usage.total_token_count
+        }
+        return response.text, token_info
     except Exception as e:
         st.error(f"An error occurred during Gemini analysis: {e}")
-        return None
+        return None, None
 
 def generate_mermaid_req_doc(md_text):
     """Generates a technical requirements document in Mermaid.js format."""
@@ -99,11 +105,18 @@ def generate_mermaid_req_doc(md_text):
         match = re.search(r"```mermaid\n(.*?)\n```", mermaid_code, re.DOTALL)
         if match:
             mermaid_code = match.group(1)
-        return mermaid_code.strip()
+        
+        usage = response.usage_metadata
+        token_info = {
+            "prompt": usage.prompt_token_count,
+            "output": usage.candidates_token_count,
+            "total": usage.total_token_count
+        }
+        return mermaid_code.strip(), token_info
 
     except Exception as e:
         st.error(f"An error occurred during Mermaid diagram generation: {e}")
-        return None
+        return None, None
 
 # --- App Logic with Session State ---
 
@@ -112,11 +125,18 @@ if "md_text" not in st.session_state:
     st.session_state.md_text = None
     st.session_state.image_list = []
     st.session_state.last_filename = None
+    st.session_state.token_counts = {"prompt": 0, "output": 0, "total": 0}
+    st.session_state.analysis = None
+    st.session_state.mermaid_code = None
 
 uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
 
 # 1. Process the file only if it's a new upload
 if uploaded_file is not None and uploaded_file.name != st.session_state.last_filename:
+    # Reset token counts for the new file session
+    st.session_state.token_counts = {"prompt": 0, "output": 0, "total": 0}
+    st.session_state.analysis = None
+    st.session_state.mermaid_code = None
     st.session_state.last_filename = uploaded_file.name
     temp_pdf_path = "temp_uploaded.pdf"
     try:
@@ -148,6 +168,8 @@ if uploaded_file is not None and uploaded_file.name != st.session_state.last_fil
         st.session_state.md_text = None
         st.session_state.image_list = []
         st.session_state.last_filename = None
+        st.session_state.analysis = None
+        st.session_state.mermaid_code = None
     finally:
         # Clean up the temporary file immediately after processing
         if os.path.exists(temp_pdf_path):
@@ -160,6 +182,13 @@ if st.session_state.md_text:
     st.sidebar.markdown("[📄 Extracted Text](#extracted-markdown-text)")
     st.sidebar.markdown("[🖼️ Extracted Images](#extracted-images)")
     st.sidebar.markdown("[🤖 AI Analysis](#gemini-analysis)")
+    st.sidebar.markdown("---")
+
+    # Display token usage
+    st.sidebar.markdown("## Token Usage")
+    st.sidebar.write(f"**Prompt Tokens:** {st.session_state.token_counts['prompt']}")
+    st.sidebar.write(f"**Output Tokens:** {st.session_state.token_counts['output']}")
+    st.sidebar.write(f"**Total Tokens:** {st.session_state.token_counts['total']}")
     st.sidebar.markdown("---")
 
     headings = extract_headings(st.session_state.md_text)
@@ -179,20 +208,36 @@ if st.session_state.md_text:
     st.subheader("AI Analysis", anchor="gemini-analysis")
     if st.button("Analyze Business Plan"):
         with st.spinner("Analyzing with Gemini..."):
-            analysis = analyze_with_gemini(st.session_state.md_text, st.session_state.image_list)
+            analysis, token_info = analyze_with_gemini(st.session_state.md_text, st.session_state.image_list)
             if analysis:
-                st.markdown(analysis)
+                st.session_state.analysis = analysis
+                # Update token counts
+                st.session_state.token_counts["prompt"] += token_info["prompt"]
+                st.session_state.token_counts["output"] += token_info["output"]
+                st.session_state.token_counts["total"] += token_info["total"]
+                st.rerun()
             else:
                 st.error("Analysis failed or returned no content.")
+
+    if st.session_state.analysis:
+        st.markdown(st.session_state.analysis)
 
     st.subheader("Technical Requirements Document", anchor="tech-req-doc")
     if st.button("Generate Technical Requirements Document"):
         with st.spinner("Generating Mermaid.js diagram..."):
-            mermaid_code = generate_mermaid_req_doc(st.session_state.md_text)
+            mermaid_code, token_info = generate_mermaid_req_doc(st.session_state.md_text)
             if mermaid_code:
-                st_mermaid(mermaid_code)
+                st.session_state.mermaid_code = mermaid_code
+                # Update token counts
+                st.session_state.token_counts["prompt"] += token_info["prompt"]
+                st.session_state.token_counts["output"] += token_info["output"]
+                st.session_state.token_counts["total"] += token_info["total"]
+                st.rerun()
             else:
                 st.error("Failed to generate Mermaid.js diagram.")
+
+    if st.session_state.mermaid_code:
+        st_mermaid(st.session_state.mermaid_code)
 
 # 3. Handle the case where no file is uploaded or it's cleared
 if uploaded_file is None and st.session_state.last_filename is not None:
@@ -200,6 +245,9 @@ if uploaded_file is None and st.session_state.last_filename is not None:
     st.session_state.md_text = None
     st.session_state.image_list = []
     st.session_state.last_filename = None
+    st.session_state.token_counts = {"prompt": 0, "output": 0, "total": 0}
+    st.session_state.analysis = None
+    st.session_state.mermaid_code = None
     # Rerun to clear the screen
     st.rerun()
 
