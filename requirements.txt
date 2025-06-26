@@ -5,3 +5,5 @@ pymupdf4llm
 PyMuPDF
 Pillow
 streamlit-mermaid
+requests
+python-docx
