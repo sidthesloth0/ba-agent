@@ -129,7 +129,12 @@ def generate_mermaid_req_doc(md_text):
     Business Plan (Markdown):
     {md_text}
 
-    IMPORTANT: Your response must contain ONLY the raw Mermaid.js code for the diagram. Start the diagram with "graph TD". Do not include any other text, explanations, or markdown code fences like ```mermaid. Also, do not use any custom styling, such as 'classDef' or 'linkStyle'. Do not add text labels to the arrows or links. Stick to the most basic Mermaid.js syntax for maximum compatibility.
+    IMPORTANT: \
+        Your response must contain ONLY the raw Mermaid.js code for the diagram. Start the diagram with "graph TD". \
+        Do not include any other text, explanations, or markdown code fences like ```mermaid. \
+        Also, do not use any custom styling, such as 'classDef' or 'linkStyle'. Do not add text labels to the arrows or links. \
+        Stick to the most basic Mermaid.js syntax for maximum compatibility. \
+        Do not use parentheses or brackets in the text labels of the nodes or links.
     """
     
     try:
