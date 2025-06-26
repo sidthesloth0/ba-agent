@@ -14,6 +14,41 @@ load_dotenv(override=True)
 
 st.title("PDF Business Plan Analyzer")
 
+# Custom CSS to reduce vertical spacing for a more compact layout
+st.markdown("""
+<style>
+    /* Main container adjustments */
+    .main .block-container {
+        padding-top: 2rem; /* A bit of space at the top */
+    }
+
+    /* Heading adjustments for compactness */
+    h1 {
+        margin-bottom: 0.5rem !important; /* Space after main title */
+    }
+    h2, h3 { /* Affects st.subheader and st.header */
+        margin-top: 2rem !important; /* Space before section headers */
+    }
+
+    /* Sidebar adjustments for compactness */
+    [data-testid="stSidebar"] div.stMarkdown {
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+    }
+    [data-testid="stSidebar"] h2 {
+        margin-top: 1rem; /* Space above section headers */
+        margin-bottom: 0.25rem; /* Reduce space after sidebar headers */
+    }
+    /* Custom style for the token display in the sidebar */
+    .sidebar-token-usage {
+        font-size: 0.9rem;
+        color: grey;
+        padding: 0px;
+        margin-bottom: 0.5rem; /* Reduced bottom margin */
+    }
+</style>
+""", unsafe_allow_html=True)
+
 gemini_api_key = os.getenv("GOOGLE_API_KEY")
 if not gemini_api_key or gemini_api_key.strip() == "":
     st.error("GOOGLE_API_KEY environment variable not found.")
@@ -40,7 +75,6 @@ def create_sidebar_toc(headings):
         for heading in headings:
             indent = "  " * (heading['level'] - 1)
             st.sidebar.markdown(f"{indent}- [{heading['title']}](#{heading['anchor']})")
-        st.sidebar.markdown("---")
 
 def analyze_with_gemini(md_text, images):
     """Analyzes the business plan text and images using Gemini."""
@@ -179,18 +213,22 @@ if uploaded_file is not None and uploaded_file.name != st.session_state.last_fil
 # 2. Display content and analysis button if a file has been successfully processed
 if st.session_state.md_text:
     # --- Sidebar ---
+    st.sidebar.markdown("## Token Usage")
+    st.sidebar.markdown(
+        f"""
+        <div class="sidebar-token-usage">
+            <strong>Total:</strong> {st.session_state.token_counts['total']}<br>
+            <strong>Prompt:</strong> {st.session_state.token_counts['prompt']}<br>
+            <strong>Output:</strong> {st.session_state.token_counts['output']}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
     st.sidebar.markdown("## Navigation")
     st.sidebar.markdown("[Extracted Text](#extracted-markdown-text)")
     st.sidebar.markdown("[Extracted Images](#extracted-images)")
     st.sidebar.markdown("[AI Analysis](#gemini-analysis)")
-    st.sidebar.markdown("---")
-
-    # Display token usage
-    st.sidebar.markdown("## Token Usage")
-    st.sidebar.write(f"**Prompt Tokens:** {st.session_state.token_counts['prompt']}")
-    st.sidebar.write(f"**Output Tokens:** {st.session_state.token_counts['output']}")
-    st.sidebar.write(f"**Total Tokens:** {st.session_state.token_counts['total']}")
-    st.sidebar.markdown("---")
 
     headings = extract_headings(st.session_state.md_text)
     create_sidebar_toc(headings)
@@ -244,25 +282,9 @@ if st.session_state.md_text:
         base64_string = base64_bytes.decode('utf-8')
         mermaid_live_url = f"https://mermaid.live/edit#base64:{base64_string}"
 
-        # Display a button that opens the diagram in the editor
-        st.link_button("Open and Edit in Mermaid.live", url=mermaid_live_url)
-
         st_mermaid(st.session_state.mermaid_code)
+
+        st.link_button("Open in Mermaid.live", mermaid_live_url)
+
         with st.expander("View and Copy Mermaid.js Code"):
             st.code(st.session_state.mermaid_code, language="mermaid")
-
-# 3. Handle the case where no file is uploaded or it's cleared
-if uploaded_file is None and st.session_state.last_filename is not None:
-    # If the file is cleared (deselected), reset the state
-    st.session_state.md_text = None
-    st.session_state.image_list = []
-    st.session_state.last_filename = None
-    st.session_state.token_counts = {"prompt": 0, "output": 0, "total": 0}
-    st.session_state.analysis = None
-    st.session_state.mermaid_code = None
-    # Rerun to clear the screen
-    st.rerun()
-
-if st.session_state.last_filename is None:
-    st.info("Please upload a PDF file to begin analysis.")
-    st.sidebar.info("Upload a PDF to see the analysis options.")
