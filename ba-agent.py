@@ -81,19 +81,15 @@ def analyze_with_gemini(md_text, images):
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = f"""
-    You are an expert business analyst.
-    Analyze the following business plan, which has been extracted from a PDF.
-    The plan is provided in Markdown format, followed by any images from the document.
+    As a business analyst, analyze the provided business plan.
+    Provide a concise analysis covering:
+    1. Summary
+    2. Strengths
+    3. Weaknesses
+    4. Actionable suggestions
+    5. Image analysis
 
-    Your analysis should cover the following points:
-    1.  **Overall Summary:** Briefly summarize the business plan.
-    2.  **Strengths:** Identify the strong points of the plan. What is well-thought-out? What are the competitive advantages?
-    3.  **Weaknesses:** Identify the weak points. Are there any gaps in the plan? What are the potential risks?
-    4.  **Suggestions for Improvement:** Provide actionable suggestions to improve the business plan. Be specific.
-    5.  **Image Analysis:** If there are images, analyze them in the context of the business plan. Do they support the text? Are they effective?
-
-    Here is the business plan content:
-
+    Business Plan Content:
     **Text (Markdown):**
     {md_text}
     """
@@ -123,18 +119,15 @@ def generate_mermaid_req_doc(md_text):
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = f"""
-    You are a technical architect. Based on the following business plan, create a technical requirements document using Mermaid.js syntax.
-    The document should outline the system architecture, components, and user flow. The diagram orientation must be top-down (use "graph TD").
+    As a technical architect, create a Mermaid.js diagram from the business plan.
+    - Diagram must be top-down (`graph TD`).
+    - Outline system architecture, components, and user flow.
+    - Output ONLY raw Mermaid.js code.
+    - No explanations, markdown fences, custom styles, or link labels.
+    - Use basic syntax. Avoid parentheses/brackets in text labels/node text.
 
-    Business Plan (Markdown):
+    Business Plan:
     {md_text}
-
-    IMPORTANT: \
-        Your response must contain ONLY the raw Mermaid.js code for the diagram. Start the diagram with "graph TD". \
-        Do not include any other text, explanations, or markdown code fences like ```mermaid. \
-        Also, do not use any custom styling, such as 'classDef' or 'linkStyle'. Do not add text labels to the arrows or links. \
-        Stick to the most basic Mermaid.js syntax for maximum compatibility. \
-        Do not use parentheses or brackets in the text labels of the nodes or links.
     """
     
     try:
