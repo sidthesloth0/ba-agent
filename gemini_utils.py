@@ -1,21 +1,14 @@
 import streamlit as st
 import google.generativeai as genai
-import re
+from prompts import SUMMARIZE_PROMPT, ANALYZE_PROMPT
 
 
 def summarize_text(md_text):
     """Generates a concise summary of the text."""
     model = genai.GenerativeModel('gemini-1.5-flash')
-    
-    prompt = f"""
-    Please provide a concise summary of the following business plan text.
-    Focus on the key points, objectives, and strategies.
-    The summary should be a few paragraphs long.
 
-    Business Plan Text:
-    {md_text}
-    """
-    
+    prompt = SUMMARIZE_PROMPT.format(md_text=md_text)
+
     try:
         response = model.generate_content(prompt)
         usage = response.usage_metadata
@@ -33,21 +26,9 @@ def summarize_text(md_text):
 def analyze_with_gemini(md_text, images):
     """Analyzes the business plan text and images using Gemini."""
     model = genai.GenerativeModel('gemini-1.5-flash')
-    
-    prompt = f"""
-    As a business analyst, analyze the provided business plan.
-    Provide a concise analysis covering:
-    1. Summary
-    2. Strengths
-    3. Weaknesses
-    4. Actionable suggestions
-    5. Image analysis
 
-    Business Plan Content:
-    **Text (Markdown):**
-    {md_text}
-    """
-    
+    prompt = ANALYZE_PROMPT.format(md_text=md_text)
+
     content_parts = [prompt]
     
     if images:
