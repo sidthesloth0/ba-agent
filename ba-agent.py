@@ -6,12 +6,7 @@ import pymupdf4llm
 import fitz  # PyMuPDF
 from PIL import Image
 import io
-import re
 from streamlit_mermaid import st_mermaid
-import base64
-from docx import Document
-from docx.shared import Inches
-import requests
 from extraction_utils import extract_headings, create_sidebar_toc
 from gemini_utils import summarize_text, analyze_with_gemini
 from docx_utils import generate_mermaid_req_doc, generate_trd_content, create_trd_word_document
