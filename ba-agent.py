@@ -83,7 +83,7 @@ if "global_analysis" not in st.session_state:
         "use_summary": False
     }
 
-uploaded_files = st.file_uploader("Choose PDF files", type="pdf", accept_multiple_files=True)
+uploaded_files = st.file_uploader("Upload one or more Business Plans in the form of a PDF", type="pdf", accept_multiple_files=True)
 
 # 1. Process uploaded files
 if uploaded_files:
