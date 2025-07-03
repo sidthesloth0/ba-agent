@@ -11,13 +11,15 @@ from streamlit_mermaid import st_mermaid
 from gemini_utils import (
     analyze_with_gemini,
     summarize_text,
+    generate_mermaid_req_doc,
+    generate_trd_content
 )
-from docx_utils import create_trd_word_document, generate_mermaid_req_doc, generate_trd_content
+from docx_utils import create_trd_word_document
 
 load_dotenv(override=True)
 
 st.title("📄 Business Analysis Agent")
-st.markdown("Powered by Google Gemini Pro")
+st.markdown("Powered by Google Gemini")
 
 # Custom CSS to reduce vertical spacing for a more compact layout
 st.markdown("""
@@ -168,7 +170,7 @@ else:
             with st.spinner("Generating all summaries..."):
                 for file_name, file_data in st.session_state.files.items():
                     if not file_data["summary"]:
-                        summary, token_info = summarize_text(file_data["md_text"])
+                        summary, token_info = summarize_text(file_data["md_text"], file_data["image_list"])
                         if summary and token_info:
                             file_data["summary"] = summary
                             st.session_state.token_counts["prompt"] += token_info["prompt"]
@@ -195,8 +197,9 @@ else:
                 for file_name, file_data in st.session_state.files.items():
                     if not file_data["trd_content"]:
                         input_text = file_data["summary"] if file_data.get("use_summary", False) else file_data["md_text"]
-                        mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text)
-                        trd_content, trd_token_info = generate_trd_content(input_text)
+                        images_to_analyze = [] if file_data.get("use_summary", False) else file_data["image_list"]
+                        mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text, images_to_analyze)
+                        trd_content, trd_token_info = generate_trd_content(input_text, images_to_analyze)
                         if mermaid_code and trd_content:
                             file_data["mermaid_code"] = mermaid_code
                             file_data["trd_content"] = trd_content
@@ -219,7 +222,7 @@ else:
         with g_col1:
             if st.button("Generate Global Summary", key="summarize_global"):
                 with st.spinner("Generating global summary..."):
-                    summary, token_info = summarize_text(combined_text)
+                    summary, token_info = summarize_text(combined_text, combined_images)
                     if summary and token_info:
                         st.session_state.global_analysis["summary"] = summary
                         st.session_state.token_counts["prompt"] += token_info["prompt"]
@@ -247,9 +250,10 @@ else:
                 with st.spinner("Generating global TRD..."):
                     use_global_summary = st.session_state.global_analysis.get("use_summary", False)
                     input_text = st.session_state.global_analysis["summary"] if use_global_summary and st.session_state.global_analysis["summary"] else combined_text
+                    images_to_analyze = [] if use_global_summary else combined_images
 
-                    mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text)
-                    trd_content, trd_token_info = generate_trd_content(input_text)
+                    mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text, images_to_analyze)
+                    trd_content, trd_token_info = generate_trd_content(input_text, images_to_analyze)
 
                     if mermaid_code and trd_content:
                         st.session_state.global_analysis["mermaid_code"] = mermaid_code
@@ -318,7 +322,7 @@ else:
         st.subheader("Token Optimization: Summary")
         if st.button(f"Generate Summary for {file_name}", key=f"summary_{file_name}"):
             with st.spinner("Generating summary..."):
-                summary, token_info = summarize_text(file_data["md_text"])
+                summary, token_info = summarize_text(file_data["md_text"], file_data["image_list"])
                 if summary and token_info:
                     file_data["summary"] = summary
                     st.session_state.token_counts["prompt"] += token_info["prompt"]
@@ -361,9 +365,10 @@ else:
             if st.button(f"Generate TRD for {file_name}", key=f"trd_{file_name}"):
                 with st.spinner("Generating Technical Requirements Document..."):
                     input_text = file_data["summary"] if file_data["use_summary"] else file_data["md_text"]
+                    images_to_analyze = [] if file_data["use_summary"] else file_data["image_list"]
 
-                    mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text)
-                    trd_content, trd_token_info = generate_trd_content(input_text)
+                    mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text, images_to_analyze)
+                    trd_content, trd_token_info = generate_trd_content(input_text, images_to_analyze)
 
                     if mermaid_code and trd_content:
                         file_data["mermaid_code"] = mermaid_code
