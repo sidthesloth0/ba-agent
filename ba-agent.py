@@ -150,7 +150,8 @@ with st.sidebar:
     st.markdown("---")
 
     st.markdown("## Navigation")
-    st.markdown("- [Batch Actions](#batch-actions)")
+    if len(st.session_state.files) > 1:
+        st.markdown("- [Batch Actions](#batch-actions)")
     if st.session_state.files:
         st.markdown("### Processed Files")
         for file_name in st.session_state.files.keys():
@@ -162,53 +163,52 @@ if not st.session_state.files:
     st.info("Upload one or more PDF files to begin analysis.")
 else:
     # --- Batch Action Buttons ---
-    st.markdown("<a name='batch-actions'></a>", unsafe_allow_html=True)
-    st.subheader("Batch Actions")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("Generate All Summaries", key="summarize_all_top"):
-            with st.spinner("Generating all summaries..."):
-                for file_name, file_data in st.session_state.files.items():
-                    if not file_data["summary"]:
-                        summary, token_info = summarize_text(file_data["md_text"], file_data["image_list"])
-                        if summary and token_info:
-                            file_data["summary"] = summary
-                            st.session_state.token_counts["prompt"] += token_info["prompt"]
-                            st.session_state.token_counts["output"] += token_info["output"]
-                            st.session_state.token_counts["total"] += token_info["total"]
-                st.rerun()
-    with col2:
-        if st.button("Analyze All Business Plans", key="analyze_all_top"):
-            with st.spinner("Analyzing all business plans..."):
-                for file_name, file_data in st.session_state.files.items():
-                    if not file_data["analysis"]:
-                        input_text = file_data["summary"] if file_data.get("use_summary", False) else file_data["md_text"]
-                        images_to_analyze = [] if file_data.get("use_summary", False) else file_data["image_list"]
-                        analysis, token_info = analyze_with_gemini(input_text, images_to_analyze)
-                        if analysis and token_info:
-                            file_data["analysis"] = analysis
-                            st.session_state.token_counts["prompt"] += token_info["prompt"]
-                            st.session_state.token_counts["output"] += token_info["output"]
-                            st.session_state.token_counts["total"] += token_info["total"]
-                st.rerun()
-    with col3:
-        if st.button("Generate All TRDs", key="trd_all_top"):
-            with st.spinner("Generating all TRDs..."):
-                for file_name, file_data in st.session_state.files.items():
-                    if not file_data["trd_content"]:
-                        input_text = file_data["summary"] if file_data.get("use_summary", False) else file_data["md_text"]
-                        images_to_analyze = [] if file_data.get("use_summary", False) else file_data["image_list"]
-                        mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text, images_to_analyze)
-                        trd_content, trd_token_info = generate_trd_content(input_text, images_to_analyze)
-                        if mermaid_code and trd_content:
-                            file_data["mermaid_code"] = mermaid_code
-                            file_data["trd_content"] = trd_content
-                            st.session_state.token_counts["prompt"] += mermaid_token_info["prompt"] + trd_token_info["prompt"]
-                            st.session_state.token_counts["output"] += mermaid_token_info["output"] + trd_token_info["output"]
-                            st.session_state.token_counts["total"] += mermaid_token_info["total"] + trd_token_info["total"]
-                st.rerun()
-
-    st.divider()
+    if len(st.session_state.files) > 1:
+        st.markdown("<a name='batch-actions'></a>", unsafe_allow_html=True)
+        st.subheader("Batch Actions")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Generate All Summaries", key="summarize_all_top"):
+                with st.spinner("Generating all summaries..."):
+                    for file_name, file_data in st.session_state.files.items():
+                        if not file_data["summary"]:
+                            summary, token_info = summarize_text(file_data["md_text"], file_data["image_list"])
+                            if summary and token_info:
+                                file_data["summary"] = summary
+                                st.session_state.token_counts["prompt"] += token_info["prompt"]
+                                st.session_state.token_counts["output"] += token_info["output"]
+                                st.session_state.token_counts["total"] += token_info["total"]
+                    st.rerun()
+        with col2:
+            if st.button("Analyze All Business Plans", key="analyze_all_top"):
+                with st.spinner("Analyzing all business plans..."):
+                    for file_name, file_data in st.session_state.files.items():
+                        if not file_data["analysis"]:
+                            input_text = file_data["summary"] if file_data.get("use_summary", False) else file_data["md_text"]
+                            images_to_analyze = [] if file_data.get("use_summary", False) else file_data["image_list"]
+                            analysis, token_info = analyze_with_gemini(input_text, images_to_analyze)
+                            if analysis and token_info:
+                                file_data["analysis"] = analysis
+                                st.session_state.token_counts["prompt"] += token_info["prompt"]
+                                st.session_state.token_counts["output"] += token_info["output"]
+                                st.session_state.token_counts["total"] += token_info["total"]
+                    st.rerun()
+        with col3:
+            if st.button("Generate All TRDs", key="trd_all_top"):
+                with st.spinner("Generating all TRDs..."):
+                    for file_name, file_data in st.session_state.files.items():
+                        if not file_data["trd_content"]:
+                            input_text = file_data["summary"] if file_data.get("use_summary", False) else file_data["md_text"]
+                            images_to_analyze = [] if file_data.get("use_summary", False) else file_data["image_list"]
+                            mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text, images_to_analyze)
+                            trd_content, trd_token_info = generate_trd_content(input_text, images_to_analyze)
+                            if mermaid_code and trd_content:
+                                file_data["mermaid_code"] = mermaid_code
+                                file_data["trd_content"] = trd_content
+                                st.session_state.token_counts["prompt"] += mermaid_token_info["prompt"] + trd_token_info["prompt"]
+                                st.session_state.token_counts["output"] += mermaid_token_info["output"] + trd_token_info["output"]
+                                st.session_state.token_counts["total"] += mermaid_token_info["total"] + trd_token_info["total"]
+                    st.rerun()
 
     # --- Global Batch Actions ---
     if len(st.session_state.files) > 1:
@@ -298,8 +298,6 @@ else:
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         key="download_global_trd"
                     )
-        st.divider()
-
 
     # --- File-Specific Analysis ---
     for file_name, file_data in st.session_state.files.items():
