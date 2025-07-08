@@ -121,8 +121,8 @@ def add_md_to_doc(document, markdown_text):
         
         i += 1
 
-def create_trd_word_document(trd_content, mermaid_code):
-    """Creates a Word document with TRD content and a Mermaid diagram."""
+def create_trd_word_document(trd_content, mermaid_code, epics_user_stories=None):
+    """Creates a Word document with TRD content, a Mermaid diagram, and epics/user stories."""
     try:
         document = Document()
         
@@ -147,6 +147,12 @@ def create_trd_word_document(trd_content, mermaid_code):
 
         image_stream = io.BytesIO(response.content)
         document.add_picture(image_stream, width=Inches(6.0))
+
+        # Add Epics and User Stories if they exist
+        if epics_user_stories:
+            document.add_page_break()
+            document.add_heading('Epics and User Stories', level=1)
+            add_md_to_doc(document, epics_user_stories)
         
         # Save the document to a byte stream
         doc_stream = io.BytesIO()

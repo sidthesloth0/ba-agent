@@ -1,6 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
-from prompts import SUMMARIZE_PROMPT, ANALYZE_PROMPT, MERMAID_PROMPT, TRD_PROMPT
+from prompts import SUMMARIZE_PROMPT, ANALYZE_PROMPT, MERMAID_PROMPT, TRD_PROMPT, EPICS_USER_STORIES_PROMPT
 
 
 def _generate_content_with_gemini(prompt, text_content, image_list=None):
@@ -105,4 +105,18 @@ def generate_trd_content(text_content, image_list=None):
                with token usage information, or (None, None) if an error occurs.
     """
     return _generate_content_with_gemini(TRD_PROMPT, text_content, image_list)
+
+def generate_epics_and_user_stories(text_content, image_list=None):
+    """
+    Generates epics and user stories based on the given text and images.
+
+    Args:
+        text_content (str): The text content for generating epics and user stories.
+        image_list (list, optional): A list of PIL Image objects. Defaults to None.
+
+    Returns:
+        tuple: A tuple containing the generated epics and user stories (str) and a dictionary
+               with token usage information, or (None, None) if an error occurs.
+    """
+    return _generate_content_with_gemini(EPICS_USER_STORIES_PROMPT, text_content, image_list)
 

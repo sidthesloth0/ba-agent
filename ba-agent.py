@@ -12,7 +12,8 @@ from gemini_utils import (
     analyze_with_gemini,
     summarize_text,
     generate_mermaid_req_doc,
-    generate_trd_content
+    generate_trd_content,
+    generate_epics_and_user_stories
 )
 from docx_utils import create_trd_word_document
 
@@ -80,6 +81,7 @@ if "global_analysis" not in st.session_state:
         "analysis": None,
         "mermaid_code": None,
         "trd_content": None,
+        "epics_user_stories": None,
         "use_summary": False
     }
 
@@ -122,6 +124,7 @@ if uploaded_files:
                         "analysis": None,
                         "mermaid_code": None,
                         "trd_content": None,
+                        "epics_user_stories": None,
                         "use_summary": False  # Default to not using summary
                     }
 
@@ -202,12 +205,15 @@ else:
                             images_to_analyze = [] if file_data.get("use_summary", False) else file_data["image_list"]
                             mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text, images_to_analyze)
                             trd_content, trd_token_info = generate_trd_content(input_text, images_to_analyze)
-                            if mermaid_code and trd_content:
+                            epics_user_stories, epics_token_info = generate_epics_and_user_stories(input_text, images_to_analyze)
+
+                            if mermaid_code and trd_content and epics_user_stories:
                                 file_data["mermaid_code"] = mermaid_code
                                 file_data["trd_content"] = trd_content
-                                st.session_state.token_counts["prompt"] += mermaid_token_info["prompt"] + trd_token_info["prompt"]
-                                st.session_state.token_counts["output"] += mermaid_token_info["output"] + trd_token_info["output"]
-                                st.session_state.token_counts["total"] += mermaid_token_info["total"] + trd_token_info["total"]
+                                file_data["epics_user_stories"] = epics_user_stories
+                                st.session_state.token_counts["prompt"] += mermaid_token_info["prompt"] + trd_token_info["prompt"] + epics_token_info["prompt"]
+                                st.session_state.token_counts["output"] += mermaid_token_info["output"] + trd_token_info["output"] + epics_token_info["output"]
+                                st.session_state.token_counts["total"] += mermaid_token_info["total"] + trd_token_info["total"] + epics_token_info["total"]
                     st.rerun()
 
     # --- Global Batch Actions ---
@@ -254,13 +260,15 @@ else:
 
                     mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text, images_to_analyze)
                     trd_content, trd_token_info = generate_trd_content(input_text, images_to_analyze)
+                    epics_user_stories, epics_token_info = generate_epics_and_user_stories(input_text, images_to_analyze)
 
-                    if mermaid_code and trd_content:
+                    if mermaid_code and trd_content and epics_user_stories:
                         st.session_state.global_analysis["mermaid_code"] = mermaid_code
                         st.session_state.global_analysis["trd_content"] = trd_content
-                        st.session_state.token_counts["prompt"] += mermaid_token_info["prompt"] + trd_token_info["prompt"]
-                        st.session_state.token_counts["output"] += mermaid_token_info["output"] + trd_token_info["output"]
-                        st.session_state.token_counts["total"] += mermaid_token_info["total"] + trd_token_info["total"]
+                        st.session_state.global_analysis["epics_user_stories"] = epics_user_stories
+                        st.session_state.token_counts["prompt"] += mermaid_token_info["prompt"] + trd_token_info["prompt"] + epics_token_info["prompt"]
+                        st.session_state.token_counts["output"] += mermaid_token_info["output"] + trd_token_info["output"] + epics_token_info["output"]
+                        st.session_state.token_counts["total"] += mermaid_token_info["total"] + trd_token_info["total"] + epics_token_info["total"]
                         st.rerun()
 
         # --- Display Global Analysis Results ---
@@ -286,10 +294,19 @@ else:
                 with st.expander("View Global TRD Content", expanded=False):
                     st.markdown(st.session_state.global_analysis["trd_content"])
                 
+                if st.session_state.global_analysis.get("epics_user_stories"):
+                    st.markdown("##### Global Epics and User Stories")
+                    with st.expander("View Global Epics and User Stories", expanded=False):
+                        st.markdown(st.session_state.global_analysis["epics_user_stories"])
+
                 st.markdown("##### Global System Architecture Diagram")
                 st_mermaid(st.session_state.global_analysis["mermaid_code"], key="global_mermaid")
 
-                doc_stream = create_trd_word_document(st.session_state.global_analysis["trd_content"], st.session_state.global_analysis["mermaid_code"])
+                doc_stream = create_trd_word_document(
+                    st.session_state.global_analysis["trd_content"], 
+                    st.session_state.global_analysis["mermaid_code"], 
+                    st.session_state.global_analysis.get("epics_user_stories")
+                )
                 if doc_stream:
                     st.download_button(
                         label="Download Global TRD (Word Document)",
@@ -367,13 +384,15 @@ else:
 
                     mermaid_code, mermaid_token_info = generate_mermaid_req_doc(input_text, images_to_analyze)
                     trd_content, trd_token_info = generate_trd_content(input_text, images_to_analyze)
+                    epics_user_stories, epics_token_info = generate_epics_and_user_stories(input_text, images_to_analyze)
 
-                    if mermaid_code and trd_content:
+                    if mermaid_code and trd_content and epics_user_stories:
                         file_data["mermaid_code"] = mermaid_code
                         file_data["trd_content"] = trd_content
-                        st.session_state.token_counts["prompt"] += mermaid_token_info["prompt"] + trd_token_info["prompt"]
-                        st.session_state.token_counts["output"] += mermaid_token_info["output"] + trd_token_info["output"]
-                        st.session_state.token_counts["total"] += mermaid_token_info["total"] + trd_token_info["total"]
+                        file_data["epics_user_stories"] = epics_user_stories
+                        st.session_state.token_counts["prompt"] += mermaid_token_info["prompt"] + trd_token_info["prompt"] + epics_token_info["prompt"]
+                        st.session_state.token_counts["output"] += mermaid_token_info["output"] + trd_token_info["output"] + epics_token_info["output"]
+                        st.session_state.token_counts["total"] += mermaid_token_info["total"] + trd_token_info["total"] + epics_token_info["total"]
                         st.rerun()
 
         if file_data["analysis"]:
@@ -390,7 +409,12 @@ else:
             st.markdown("#### System Architecture Diagram")
             st_mermaid(file_data["mermaid_code"], key=f"mermaid_{file_name}")
 
-            doc_stream = create_trd_word_document(file_data["trd_content"], file_data["mermaid_code"])
+            if file_data["epics_user_stories"]:
+                st.markdown("### Epics and User Stories")
+                with st.expander("View Epics and User Stories", expanded=False):
+                    st.markdown(file_data["epics_user_stories"])
+
+            doc_stream = create_trd_word_document(file_data["trd_content"], file_data["mermaid_code"], file_data["epics_user_stories"])
             if doc_stream:
                 st.download_button(
                     label="Download Full TRD (Word Document)",

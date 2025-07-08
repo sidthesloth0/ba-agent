@@ -57,7 +57,7 @@ Follow this structure precisely. ONLY include sections if the business plan prov
 (Create a plain text table with these columns: | FR-ID | Requirement | Description |)
 
 # 4. UI Screen Specifications
-(ONLY include this section if UI/UX details are mentioned. Use '## Screen: [Screen Name]' as a sub-header for each screen.)
+(Analyze the provided images for UI/UX details. ONLY include this section if UI/UX details are mentioned in the text or visible in the images. Use '## Screen: [Screen Name]' as a sub-header for each screen.)
 
 # 5. User Roles and Permissions
 (ONLY include this section if user roles are described. Create a plain text table: | Role | Permissions |)
@@ -77,6 +77,15 @@ Follow this structure precisely. ONLY include sections if the business plan prov
 (Outline security considerations)
 ## Scalability
 (Mention scalability requirements)
+
+**Business Plan Content:**
+{md_text}
+"""
+
+EPICS_USER_STORIES_PROMPT = """
+As an Agile Product Owner, create a list of epics and user stories based on the provided business plan.
+Structure the output in Markdown format.
+For each epic, provide a list of user stories. Each user story should be in the format: "As a [user type], I want [goal] so that [benefit]."
 
 **Business Plan Content:**
 {md_text}
