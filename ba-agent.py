@@ -16,11 +16,12 @@ from gemini_utils import (
     generate_epics_and_user_stories
 )
 from docx_utils import create_trd_word_document
+from prompts import GEMINI_MODEL
 
 load_dotenv(override=True)
 
 st.title("📄 Business Analysis Agent")
-st.markdown("Powered by Google Gemini")
+st.markdown(f"Powered by Google's **{GEMINI_MODEL}**")
 
 # Custom CSS to reduce vertical spacing for a more compact layout
 st.markdown("""

@@ -1,5 +1,7 @@
 # prompts.py
 
+GEMINI_MODEL = "gemini-2.0-flash"
+
 SUMMARIZE_PROMPT = """
 Please provide a concise summary of the following business plan text.
 Focus on the key points, objectives, and strategies.

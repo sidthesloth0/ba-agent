@@ -1,6 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
-from prompts import SUMMARIZE_PROMPT, ANALYZE_PROMPT, MERMAID_PROMPT, TRD_PROMPT, EPICS_USER_STORIES_PROMPT
+from prompts import GEMINI_MODEL, SUMMARIZE_PROMPT, ANALYZE_PROMPT, MERMAID_PROMPT, TRD_PROMPT, EPICS_USER_STORIES_PROMPT
 
 
 def _generate_content_with_gemini(prompt, text_content, image_list=None):
@@ -19,7 +19,7 @@ def _generate_content_with_gemini(prompt, text_content, image_list=None):
     if not text_content:
         return None, None
 
-    model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+    model = genai.GenerativeModel(model_name=GEMINI_MODEL)
 
     prompt_parts = [prompt, text_content]
     if image_list:
