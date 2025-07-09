@@ -21,6 +21,11 @@ from analysis_utils import count_epics_and_stories
 
 load_dotenv(override=True)
 
+st.set_page_config(
+    page_title="BA Agent",
+    page_icon="📄"
+)
+
 st.title("📄 Business Analysis Agent")
 st.markdown(f"Powered by Google's **{GEMINI_MODEL}**")
 
@@ -436,7 +441,7 @@ else:
 
             with st.expander("View and Copy Mermaid.js Code"):
                 st.code(file_data["mermaid_code"], language="mermaid")
-                
+
         if file_data["epics_user_stories"]:
             st.markdown("### Epics and User Stories")
             # Count and display epics and user stories
