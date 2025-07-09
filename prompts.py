@@ -38,10 +38,10 @@ Business Plan:
 """
 
 TRD_PROMPT = """
-As a senior business analyst, create a comprehensive Technical Requirements Document (TRD) in Markdown format based on the provided business plan.
+As a senior business analyst, create a comprehensive Technical Requirements Document (TRD) in Markdown format based on the provided business plan. The entire output must be a single, valid Markdown document. **Do not wrap the output in markdown code fences (```).**
 
 **TRD Structure:**
-Follow this structure precisely. ONLY include sections if the business plan provides relevant information.
+Follow this structure precisely.
 
 # 1. Introduction
 ## Project Overview
@@ -56,23 +56,23 @@ Follow this structure precisely. ONLY include sections if the business plan prov
 (Detail the main components or modules)
 
 # 3. Functional Requirements
-(Create a plain text table with these columns: | FR-ID | Requirement | Description |)
+(Create a Markdown table with these columns: | FR-ID | Requirement | Description |)
 
 # 4. UI Screen Specifications
-(Analyze the provided images for UI/UX details. ONLY include this section if UI/UX details are mentioned in the text or visible in the images. Use '## Screen: [Screen Name]' as a sub-header for each screen.)
+(Analyze any provided images for UI/UX details. If no specific UI details are mentioned or visible, state "No UI/UX details were specified in the business plan.")
 
 # 5. User Roles and Permissions
-(ONLY include this section if user roles are described. Create a plain text table: | Role | Permissions |)
+(Describe user roles if mentioned. If not, state "No specific user roles were defined." Create a Markdown table if roles are present: | Role | Permissions |)
 
 # 6. Technical Specifications
-(ONLY include this section if technical details are provided.)
+(Detail technical specifications if provided. If not, state "No technical specifications were detailed.")
 ## Database Schema
-(Propose a high-level database schema if applicable)
+(Propose a high-level database schema if applicable. If not, state "Not applicable.")
 ## API Endpoints
-(Suggest key API endpoints if applicable)
+(Suggest key API endpoints if applicable. If not, state "Not applicable.")
 
 # 7. Non-Functional Requirements
-(ONLY include this section if NFRs like performance, security, or scalability are mentioned.)
+(Describe NFRs like performance, security, or scalability. If none are mentioned, state "No non-functional requirements were specified.")
 ## Performance
 (Describe performance expectations)
 ## Security
@@ -85,9 +85,18 @@ Follow this structure precisely. ONLY include sections if the business plan prov
 """
 
 EPICS_USER_STORIES_PROMPT = """
-As an Agile Product Owner, create a list of epics and user stories based on the provided business plan.
-Structure the output in Markdown format.
-For each epic, provide a list of user stories. Each user story should be in the format: "As a [user type], I want [goal] so that [benefit]."
+As an Agile Product Owner, create a list of epics and user stories in Markdown format based on the provided business plan.
+
+**Output Structure:**
+Follow this structure precisely. For each epic, create a Markdown table with user stories.
+
+## Epic: [Epic Name]
+**Description:** [Briefly describe the epic's goal.]
+
+| User Story | Description | Acceptance Criteria |
+| --- | --- | --- |
+| [Story Title] | As a [user type], I want [goal] so that [benefit]. | - Given [context], when [action], then [outcome]. - [Criterion 2] |
+| [Story Title 2] | As a [user type], I want [goal] so that [benefit]. | - [Criterion 1] | - [Criterion 2] |
 
 **Business Plan Content:**
 {md_text}

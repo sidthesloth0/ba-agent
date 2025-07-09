@@ -121,8 +121,8 @@ def add_md_to_doc(document, markdown_text):
         
         i += 1
 
-def create_trd_word_document(trd_content, mermaid_code, epics_user_stories=None):
-    """Creates a Word document with TRD content, a Mermaid diagram, and epics/user stories."""
+def create_trd_word_document(trd_content, mermaid_code, epics_user_stories=None, extracted_text=None):
+    """Creates a Word document with TRD content, a Mermaid diagram, epics/user stories, and an appendix with the full extracted text."""
     try:
         document = Document()
         
@@ -153,6 +153,12 @@ def create_trd_word_document(trd_content, mermaid_code, epics_user_stories=None)
             document.add_page_break()
             document.add_heading('Epics and User Stories', level=1)
             add_md_to_doc(document, epics_user_stories)
+
+        # Add the full extracted text as an appendix
+        if extracted_text:
+            document.add_page_break()
+            document.add_heading('Appendix: Full Extracted Text', level=1)
+            add_md_to_doc(document, extracted_text)
         
         # Save the document to a byte stream
         doc_stream = io.BytesIO()

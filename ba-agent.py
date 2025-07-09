@@ -17,6 +17,7 @@ from gemini_utils import (
 )
 from docx_utils import create_trd_word_document
 from prompts import GEMINI_MODEL
+from analysis_utils import count_epics_and_stories
 
 load_dotenv(override=True)
 
@@ -283,23 +284,19 @@ else:
                     key="use_global_summary"
                 )
                 st.markdown("#### Global Summary")
-                with st.container(height=200):
+                with st.expander("View Global Summary"):
                     st.markdown(st.session_state.global_analysis["summary"])
 
             if st.session_state.global_analysis["analysis"]:
                 st.markdown("#### Global Business Analysis")
-                st.markdown(st.session_state.global_analysis["analysis"])
+                with st.expander("View Global Business Analysis"):
+                    st.markdown(st.session_state.global_analysis["analysis"])
 
             if st.session_state.global_analysis["mermaid_code"] and st.session_state.global_analysis["trd_content"]:
                 st.markdown("#### Global Technical Requirements Document")
                 with st.expander("View Global TRD Content", expanded=False):
-                    st.markdown(st.session_state.global_analysis["trd_content"])
+                    st.markdown(st.session_state.global_analysis["trd_content"], unsafe_allow_html=True)
                 
-                if st.session_state.global_analysis.get("epics_user_stories"):
-                    st.markdown("##### Global Epics and User Stories")
-                    with st.expander("View Global Epics and User Stories", expanded=False):
-                        st.markdown(st.session_state.global_analysis["epics_user_stories"])
-
                 st.markdown("##### Global System Architecture Diagram")
                 st_mermaid(st.session_state.global_analysis["mermaid_code"], key="global_mermaid")
 
@@ -316,6 +313,15 @@ else:
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         key="download_global_trd"
                     )
+            
+            if st.session_state.global_analysis.get("epics_user_stories"):
+                st.markdown("#### Global Epics and User Stories")
+
+                # Count epics and user stories
+                epics_count, stories_count = count_epics_and_stories(st.session_state.global_analysis["epics_user_stories"])
+                st.markdown(f"**Epics:** {epics_count}, **User Stories:** {stories_count}")
+
+                st.markdown(st.session_state.global_analysis["epics_user_stories"], unsafe_allow_html=True)
 
     # --- File-Specific Analysis ---
     for file_name, file_data in st.session_state.files.items():
@@ -348,7 +354,7 @@ else:
 
         if file_data["summary"]:
             st.markdown("### Generated Summary")
-            with st.container(height=200):
+            with st.expander("View Summary"):
                 st.markdown(file_data["summary"])
 
         # --- Analysis and TRD Section ---
@@ -395,27 +401,30 @@ else:
                         st.session_state.token_counts["output"] += mermaid_token_info["output"] + trd_token_info["output"] + epics_token_info["output"]
                         st.session_state.token_counts["total"] += mermaid_token_info["total"] + trd_token_info["total"] + epics_token_info["total"]
                         st.rerun()
+    
+                        
 
         if file_data["analysis"]:
             st.markdown("### Business Analysis")
-            st.markdown(file_data["analysis"])
+            with st.expander("View Business Analysis"):
+                st.markdown(file_data["analysis"], unsafe_allow_html=True)
 
         if file_data["mermaid_code"] and file_data["trd_content"]:
             st.markdown("### Technical Requirements Document")
             st.success("TRD generated successfully!")
 
             with st.expander("View Generated TRD Content", expanded=True):
-                st.markdown(file_data["trd_content"])
+                st.markdown(file_data["trd_content"], unsafe_allow_html=True)
 
             st.markdown("#### System Architecture Diagram")
             st_mermaid(file_data["mermaid_code"], key=f"mermaid_{file_name}")
 
-            if file_data["epics_user_stories"]:
-                st.markdown("### Epics and User Stories")
-                with st.expander("View Epics and User Stories", expanded=False):
-                    st.markdown(file_data["epics_user_stories"])
-
-            doc_stream = create_trd_word_document(file_data["trd_content"], file_data["mermaid_code"], file_data["epics_user_stories"])
+            doc_stream = create_trd_word_document(
+                file_data["trd_content"], 
+                file_data["mermaid_code"], 
+                file_data["epics_user_stories"],
+                extracted_text=file_data["md_text"]
+            )
             if doc_stream:
                 st.download_button(
                     label="Download Full TRD (Word Document)",
@@ -427,8 +436,14 @@ else:
 
             with st.expander("View and Copy Mermaid.js Code"):
                 st.code(file_data["mermaid_code"], language="mermaid")
+                
+        if file_data["epics_user_stories"]:
+            st.markdown("### Epics and User Stories")
+            # Count and display epics and user stories
+            epics_count, stories_count = count_epics_and_stories(file_data["epics_user_stories"])
+            st.markdown(f"**Overview:** Epics: `{epics_count}`, User Stories: `{stories_count}`")
+            st.markdown(file_data["epics_user_stories"], unsafe_allow_html=True)
         
         st.divider()
 
 # Display total token count
-st.sidebar.markdown("---")
