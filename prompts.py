@@ -95,8 +95,8 @@ Follow this structure precisely. For each epic, create a Markdown table with use
 
 | User Story | Description | Acceptance Criteria |
 | --- | --- | --- |
-| [Story Title] | As a [user type], I want [goal] so that [benefit]. | - Given [context], when [action], then [outcome]. - [Criterion 2] |
-| [Story Title 2] | As a [user type], I want [goal] so that [benefit]. | - [Criterion 1] | - [Criterion 2] |
+| A short, descriptive title for the story (e.g., "User Login") | The full user story narrative, following the format: "As a [user type], I want [goal] so that [benefit]." | - Given [context], when [action], then [outcome].<br>- Another criterion. |
+| A second story title | The full narrative for the second story. | - A criterion for the second story. |
 
 **Business Plan Content:**
 {md_text}
