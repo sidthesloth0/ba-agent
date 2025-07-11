@@ -1,6 +1,6 @@
 # prompts.py
 
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.5-flash"
 
 SUMMARIZE_PROMPT = """
 Please provide a concise summary of the following business plan text.
